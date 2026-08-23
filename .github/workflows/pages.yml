@@ -1,0 +1,119 @@
+name: Deploy Pages
+
+on:
+  pull_request:
+    paths:
+      - web/**
+      - api/v1/tokenized-assets/index.json
+      - api/v1/tokenized-assets/issuer.json
+      - api/v1/tokenized-assets/chain-weekly.json
+      - api/v1/tokenized-assets/deployments.json
+      - api/v1/tokenized-assets/mint-burn.json
+      - .github/workflows/pages.yml
+  push:
+    branches: [main]
+    paths:
+      - web/**
+      - api/v1/tokenized-assets/index.json
+      - api/v1/tokenized-assets/issuer.json
+      - api/v1/tokenized-assets/chain-weekly.json
+      - api/v1/tokenized-assets/deployments.json
+      - api/v1/tokenized-assets/mint-burn.json
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate issuer and chain scope separation
+        run: |
+          for f in index issuer chain-weekly deployments mint-burn; do python -m json.tool "api/v1/tokenized-assets/$f.json" >/dev/null; done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('api/v1/tokenized-assets')
+          idx=json.loads((root/'index.json').read_text())
+          issuer=json.loads((root/'issuer.json').read_text())['records']
+          chain=json.loads((root/'chain-weekly.json').read_text())['records']
+          deps=json.loads((root/'deployments.json').read_text())['records']
+          events=json.loads((root/'mint-burn.json').read_text())['events']
+          assert len(issuer)==idx['coverage']['issuer_observation_count']
+          assert len(chain)==idx['coverage']['chain_observation_count']
+          assert issuer[-1]['issuer_scope']=='all Circle-approved blockchains'
+          assert chain[-1]['chain_id']==1 and chain[-1]['block_hash']
+          assert issuer[-1]['circulation_usdc'] != chain[-1]['total_supply']
+          assert all(x['chain_id']==1 and x['block_hash'] for x in deps)
+          assert all(x['event_type'] in {'mint','burn'} for x in events)
+          assert idx['coverage']['mint_event_count']+idx['coverage']['burn_event_count']==len(events)
+          assert any('separate observations' in x for x in idx['rules'])
+          assert any('never applies guessed corrections' in x for x in idx['rules'])
+          html=Path('web/index.html').read_text()
+          for marker in ('ISSUER FACT ≠ CHAIN FACT','Two scopes','UTC日の途中','week over week'):
+              assert marker in html, marker
+          start=html.index('<script type="module">')+len('<script type="module">')
+          end=html.index('</script>',start)
+          Path('/tmp/dashboard.mjs').write_text(html[start:end])
+          PY
+          node --check /tmp/dashboard.mjs
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build public projection
+        run: |
+          mkdir -p web/api/v1/tokenized-assets
+          for f in index issuer chain-weekly deployments mint-burn; do cp "api/v1/tokenized-assets/$f.json" "web/api/v1/tokenized-assets/$f.json"; done
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          Path('web/deployment.json').write_text(json.dumps({'source_commit':os.environ['GITHUB_SHA']},indent=2)+'\n')
+          PY
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+      - id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify exact deployed revision and scope identities
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          python - <<'PY'
+          import json, os, time
+          from urllib.parse import urljoin
+          from urllib.request import urlopen
+          base=os.environ['PAGE_URL']; expected=os.environ['GITHUB_SHA']; last=None
+          for _ in range(30):
+              try:
+                  with urlopen(urljoin(base,'deployment.json'),timeout=10) as r: dep=json.load(r)
+                  with urlopen(urljoin(base,'api/v1/tokenized-assets/issuer.json'),timeout=10) as r: issuer=json.load(r)
+                  with urlopen(urljoin(base,'api/v1/tokenized-assets/chain-weekly.json'),timeout=10) as r: chain=json.load(r)
+                  with urlopen(base,timeout=10) as r: html=r.read().decode()
+                  assert dep['source_commit']==expected
+                  assert issuer['records'][-1]['issuer_scope']=='all Circle-approved blockchains'
+                  assert chain['records'][-1]['chain_id']==1
+                  assert 'Tokenized moneyは' in html and 'Two scopes' in html
+                  print({'page_url':base,'source_commit':expected,'issuer_as_of':issuer['records'][-1]['as_of'],'chain_observed_at':chain['records'][-1]['observed_at']})
+                  break
+              except Exception as exc:
+                  last=exc; time.sleep(2)
+          else:
+              raise SystemExit(f'production verification failed: {last}')
+          PY
