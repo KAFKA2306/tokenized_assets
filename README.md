@@ -1,10 +1,22 @@
 # Tokenized Assets Primary Evidence
 
-[![Tokenized assets evidence](https://github.com/KAFKA2306/fx/actions/workflows/tokenized-assets.yml/badge.svg)](https://github.com/KAFKA2306/fx/actions/workflows/tokenized-assets.yml)
+[![Tokenized assets evidence](https://github.com/KAFKA2306/tokenized_assets/actions/workflows/tokenized-assets.yml/badge.svg)](https://github.com/KAFKA2306/tokenized_assets/actions/workflows/tokenized-assets.yml)
+[![Deploy Pages](https://github.com/KAFKA2306/tokenized_assets/actions/workflows/pages.yml/badge.svg)](https://github.com/KAFKA2306/tokenized_assets/actions/workflows/pages.yml)
 
-Tokenized assetを**発行体の一次開示・法的asset identity・Ethereum上のtoken deployment・block-level evidence**へ分離し、raw evidenceから再生成可能なdatasetとして保存します。旧FX signal/backtestではなく、`api/v1/tokenized-assets/` が正準成果物です。
+Tokenized assetを**発行体の一次開示・法的asset identity・Ethereum上のtoken deployment・block-level evidence**へ分離し、raw evidenceから再生成可能なdatasetとして保存します。`api/v1/tokenized-assets/` が正準成果物です。
 
-## 正準data
+## Public dashboard
+
+- Daily entry point: https://kafka2306.github.io/tokenized_assets/
+- latest issuer-reported USDC circulation and reserve fair value
+- latest Ethereum native USDC `totalSupply()` and week-over-week change
+- issuer all-chain scopeとEthereum-only scopeを別laneで表示
+- BUIDL / OUSGのverified Ethereum deployments
+- mint/burn coverageとlatest observed event timestamp
+
+Pagesはissuer factとchain factを同じcurrent valueへ補正しません。最新mint/burn eventがUTC日の途中ならdaily net issuanceとも表示しません。
+
+## Canonical data
 
 - [dataset index](api/v1/tokenized-assets/index.json)
 - [asset / deployment registry](api/v1/tokenized-assets/registry.json)
@@ -16,26 +28,15 @@ Tokenized assetを**発行体の一次開示・法的asset identity・Ethereum�
 - [issuer ↔ chain reconciliation](api/v1/tokenized-assets/reconciliation.json)
 - [raw provenance manifest](api/v1/tokenized-assets/provenance.json)
 
-`Tokenized assets evidence` workflowが毎日一次情報を取得し、raw response / issuer documentをSHA-256で固定した後、同じevidenceからAPIを生成します。CIでは保存済みevidenceだけでoffline再生成し、live生成物との差分がないことを検証します。
+`Tokenized assets evidence` workflowが一次情報を取得し、raw response / issuer documentをSHA-256で固定した後、同じevidenceからAPIを生成します。CIでは保存済みevidenceだけでoffline再生成し、live生成物との差分がないことを検証します。
 
 ## USDC: issuer factとchain factを混ぜない
 
 Circle reserve reportのissuer observationでは、all approved blockchainsを対象とするUSDC circulationとreserve fair valueを別fieldで保持します。
 
-Ethereum側ではCircleが公開するnative USDC contractについて、finalized Ethereum blockを基準に週次`totalSupply()`を観測します。各recordは最低限次を持ちます。
+Ethereum側ではCircleが公開するnative USDC contractについて、finalized Ethereum blockを基準に週次`totalSupply()`を観測します。各recordはchain ID、block number/hash、contract address、observed_at、total supplyを保持します。
 
-```text
-chain_id
-block_number
-block_hash
-contract_address
-observed_at
-total_supply_raw
-decimals
-total_supply
-```
-
-issuer-reported all-chain circulationとEthereum native `totalSupply()`はscopeが異なるため、同じ値として補正しません。`reconciliation.json`には観測差をそのまま残し、`correction_applied: false`を固定します。
+issuer-reported all-chain circulationとEthereum native `totalSupply()`はscopeが異なるため、同じ値として補正しません。`reconciliation.json`には観測差をそのまま残し、guessed correctionを適用しません。
 
 ## Mint / burn
 
@@ -49,60 +50,26 @@ USDCのsupply-changing eventだけをEthereum `Transfer` logから抽出しま�
 
 ## Tokenized funds
 
-stablecoin以外もlegal assetとtoken deploymentを分けて登録します。
-
-### BUIDL
-
-BlackRock USD Institutional Digital Liquidity Fund Ltd.をlegal assetとして保持し、SEC filing identityとBlackRockが公開するEthereum contractを別recordにします。BlackRockが公式に列挙する複数contractは暗黙に1件へ統合しません。
-
-### OUSG
-
-Ondo Short-Term US Government Treasuries Fund (OUSG)をlegal assetとして保持し、SEC filing identity、issuer documentation、Ethereum contract deploymentを分離します。
+BUIDL / OUSGはlegal assetとtoken deploymentを分けて登録します。複数official contractsは暗黙に1件へ統合しません。
 
 ## Data contract
 
-```text
-issuer / SEC / official contract source
-  ↓
-raw evidence + SHA-256
-  ↓
-normalized issuer / chain / deployment / mint-burn records
-  ↓
-api/v1/tokenized-assets/*.json|csv
-```
+- issuer-reported circulation / reserve fair value / Ethereum token supplyを別metricにする
+- legal asset identity / token deployment identityを分離する
+- Ethereum mainnet以外、missing code、取得不能ERC-20 state、raw hash mismatchはfail closed
+- mint/burnと普通のtransferを混ぜない
+- reconciliationは観測差を保持し、推測補正しない
+- source evidenceからderived APIを再生成できる
 
-fail-closed条件:
-
-- Ethereum mainnet以外のchain ID
-- official registry contractにcodeがない
-- ERC-20 `decimals()` / `totalSupply()`が取得不能
-- raw evidence hash不一致
-- USDC issuer historyが90日未満
-- chain historyが90日未満
-- legal asset / token deployment identityの重複・欠落
-
-## 実行
-
-標準ライブラリのみです。デフォルトRPCは公開Ethereum transportを使いますが、別transportを使う場合も同じmainnet/block provenance contractを満たす必要があります。
+## Verification
 
 ```bash
 python tokenized_assets.py
-```
-
-保存済みraw/normalized evidenceからAPIを再生成:
-
-```bash
 python tokenized_assets.py --offline
-```
-
-テスト:
-
-```bash
 python -m unittest discover -v
 ```
 
-## Scope
+- `Tokenized assets evidence` はissuer / SEC / Ethereum一次証拠とoffline rebuildを検証します。
+- `Deploy Pages` はPRでscope separationとdashboard JSを検証し、mainではpublic projectionをdeployしてexact SHA・issuer scope・chain IDを照合します。
 
-このrepositoryの正準責務はtokenized asset evidenceです。旧FX設計メモ、signal、backtest、trading recommendationは正準datasetではありません。投資助言・売買signalを提供しません。
-
-Tracking issue: https://github.com/KAFKA2306/fx/issues/4
+Tracking issue: https://github.com/KAFKA2306/tokenized_assets/issues/11
