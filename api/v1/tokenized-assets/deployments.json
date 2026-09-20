@@ -3,8 +3,8 @@
     {
       "asset_id": "usdc",
       "asset_type": "stablecoin",
-      "block_hash": "0xe6a2c18e66f77ff707bfb7721733b1522e5e492ae2a2ce734f8ad786aaab2064",
-      "block_number": 26014475,
+      "block_hash": "0x6ae542a0a541d395c0f01602ddc6a9d0069b2831c62ffab94cf9642559c6541a",
+      "block_number": 26021710,
       "chain": "ethereum-mainnet",
       "chain_id": 1,
       "contract_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
@@ -13,15 +13,15 @@
       "deployment_id": "usdc-ethereum-mainnet",
       "legal_asset_name": "USD Coin (USDC)",
       "legal_issuer": "Circle Internet Financial, LLC / Circle Internet Financial Europe SAS",
-      "observed_at": "2026-09-19T22:14:47+00:00",
-      "total_supply": 49858939553.20698,
-      "total_supply_raw": 49858939553206980
+      "observed_at": "2026-09-20T22:27:35+00:00",
+      "total_supply": 49873491172.59018,
+      "total_supply_raw": 49873491172590176
     },
     {
       "asset_id": "buidl",
       "asset_type": "tokenized_fund",
-      "block_hash": "0xe6a2c18e66f77ff707bfb7721733b1522e5e492ae2a2ce734f8ad786aaab2064",
-      "block_number": 26014475,
+      "block_hash": "0x6ae542a0a541d395c0f01602ddc6a9d0069b2831c62ffab94cf9642559c6541a",
+      "block_number": 26021710,
       "chain": "ethereum-mainnet",
       "chain_id": 1,
       "contract_address": "0x7712c34205737192402172409a8f7ccef8aa2aec",
@@ -30,15 +30,15 @@
       "deployment_id": "buidl-ethereum-mainnet-7712",
       "legal_asset_name": "BlackRock USD Institutional Digital Liquidity Fund Ltd.",
       "legal_issuer": "BlackRock USD Institutional Digital Liquidity Fund Ltd.",
-      "observed_at": "2026-09-19T22:14:47+00:00",
+      "observed_at": "2026-09-20T22:27:35+00:00",
       "total_supply": 210200005.490338,
       "total_supply_raw": 210200005490338
     },
     {
       "asset_id": "buidl",
       "asset_type": "tokenized_fund",
-      "block_hash": "0xe6a2c18e66f77ff707bfb7721733b1522e5e492ae2a2ce734f8ad786aaab2064",
-      "block_number": 26014475,
+      "block_hash": "0x6ae542a0a541d395c0f01602ddc6a9d0069b2831c62ffab94cf9642559c6541a",
+      "block_number": 26021710,
       "chain": "ethereum-mainnet",
       "chain_id": 1,
       "contract_address": "0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041",
@@ -47,15 +47,15 @@
       "deployment_id": "buidl-ethereum-mainnet-6a9d",
       "legal_asset_name": "BlackRock USD Institutional Digital Liquidity Fund Ltd.",
       "legal_issuer": "BlackRock USD Institutional Digital Liquidity Fund Ltd.",
-      "observed_at": "2026-09-19T22:14:47+00:00",
+      "observed_at": "2026-09-20T22:27:35+00:00",
       "total_supply": 264540656.260111,
       "total_supply_raw": 264540656260111
     },
     {
       "asset_id": "ousg",
       "asset_type": "tokenized_fund",
-      "block_hash": "0xe6a2c18e66f77ff707bfb7721733b1522e5e492ae2a2ce734f8ad786aaab2064",
-      "block_number": 26014475,
+      "block_hash": "0x6ae542a0a541d395c0f01602ddc6a9d0069b2831c62ffab94cf9642559c6541a",
+      "block_number": 26021710,
       "chain": "ethereum-mainnet",
       "chain_id": 1,
       "contract_address": "0x1B19C19393e2d034D8Ff31ff34c81252FcBbee92",
@@ -64,11 +64,11 @@
       "deployment_id": "ousg-ethereum-mainnet",
       "legal_asset_name": "Ondo Short-Term US Government Treasuries Fund (OUSG)",
       "legal_issuer": "Ondo I LP",
-      "observed_at": "2026-09-19T22:14:47+00:00",
+      "observed_at": "2026-09-20T22:27:35+00:00",
       "total_supply": 1162281.8174978308,
       "total_supply_raw": 1162281817497830780305451
     }
   ],
-  "retrieved_at": "2026-09-19T22:29:15.599008+00:00",
+  "retrieved_at": "2026-09-20T22:41:29.630343+00:00",
   "schema_version": 1
 }
