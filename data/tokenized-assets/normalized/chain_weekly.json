@@ -197,8 +197,19 @@
       "target_timestamp": "2026-09-22T22:59:35+00:00",
       "total_supply": 49875656734.90249,
       "total_supply_raw": 49875656734902486
+    },
+    {
+      "block_hash": "0x4a757b2171b4b6ef3736251687833af9afd8291a836f2f275672350a9746bf85",
+      "block_number": 26079478,
+      "chain_id": 1,
+      "contract_address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      "decimals": 6,
+      "observed_at": "2026-09-29T00:16:23+00:00",
+      "target_timestamp": "2026-09-29T00:16:23+00:00",
+      "total_supply": 49838492730.97195,
+      "total_supply_raw": 49838492730971944
     }
   ],
-  "retrieved_at": "2026-09-27T23:23:49.915542+00:00",
+  "retrieved_at": "2026-09-29T00:31:48.680215+00:00",
   "schema_version": 1
 }
