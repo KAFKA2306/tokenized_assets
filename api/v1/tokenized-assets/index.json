@@ -1,24 +1,24 @@
 {
   "coverage": {
     "asset_count": 3,
-    "burn_event_count": 367,
+    "burn_event_count": 260,
     "chain_first_time": "2026-05-12T20:38:47+00:00",
-    "chain_last_time": "2026-11-03T02:24:23+00:00",
-    "chain_observation_count": 24,
-    "chain_span_days": 174,
+    "chain_last_time": "2026-11-10T02:37:11+00:00",
+    "chain_observation_count": 25,
+    "chain_span_days": 181,
     "deployment_count": 4,
     "filing_count": 2,
     "issuer_first_date": "2026-03-11",
     "issuer_last_date": "2026-06-30",
     "issuer_observation_count": 8,
     "issuer_span_days": 111,
-    "mint_burn_event_count": 1204,
-    "mint_event_count": 837,
+    "mint_burn_event_count": 804,
+    "mint_event_count": 544,
     "non_stablecoin_asset_count": 2,
-    "raw_evidence_count": 327
+    "raw_evidence_count": 279
   },
   "dataset": "Tokenized assets primary evidence",
-  "retrieved_at": "2026-11-09T00:00:27.542934+00:00",
+  "retrieved_at": "2026-11-10T02:54:58.865758+00:00",
   "rules": [
     "issuer-reported USDC circulation and Ethereum contract totalSupply are separate observations",
     "reserve fair value and circulation are separate fields",
